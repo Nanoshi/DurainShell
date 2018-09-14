@@ -11,13 +11,12 @@ Combine the 2 options! Use meun for fast movement and Gridview for complex choic
 
 
     Title
-Name                 Paramater    Group ID
+Name                  Paramater   Group ID
 
 <back/cancel> Go back to previous screen
 <save/commit> Save settings
-Current command: ma
+Current command: NMAP <IP> 
 Current param: -PS 443,80
-
 
 Group name            <required>  
 (x) Radio 1           <required>  Gr1-R1 
