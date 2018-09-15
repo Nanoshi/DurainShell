@@ -1,4 +1,4 @@
-# DurainShell
+# DurianShell
 Command line parameter generater
 And
 Automated vulnerability scanner
