@@ -1,6 +1,21 @@
 <#
 Lots to do here, I'll start with a light framework that I'll replace
 In time. 
+
+To do list:
+Auto scan menu based on results
+Logging per ip
+Tool default and history layout 
+Tool json layout
+Parsers
+Object nesting defaults > history > ip
+Master log
+Output clixml 
+Toggle menu
+Ip select all many one
+Job handler. Job ids
+Ssh parser? 
+Scp
 #>
 
 
@@ -13,6 +28,7 @@ In time.
 # Scan for installed tools
 
 # Ask if it's a new scan or a old
+# ask name or auto generated 
 
 # Import old scan settings
 
@@ -27,27 +43,36 @@ Proably handle return of menu options here.
 
 Level 1
 Refresh
-Options 
-Directory 
-Load
-Save
-Scan  Nmap 
+Tools
+  Based on target protocols
+  Http <1 target>
+  Scanners always visible 
+  Show all <manually select>
+Choose targets <currently>
+  List of live, multi select
+Global Options
+  Auto sub menu 
+    Enable disable features
+  Localip
+  Directory of reports
+  Logging level
+Change to different save
+Exit 
 
-Tool nmap 
-Back to main
-IP Range
-Scan level 1-4
-Custom ports? 
---stats-every 10s,
-Scan
+Tool options header 
+# Location
+# ip selected
+# current command
+## current option? 
 
-Ip
-All
-Multi choice list of ips and open ports 
+Auto options
+Nmap progressive123
+  If live system
 
-Proto selsct
-List of open proto 
+Jobs running 
+# running / # queued name
+1/3 nmap 2 nikto 4 dirb
 
-Tools for <proto>
-
+Manage jobs 
+  Cancel job
 #>
