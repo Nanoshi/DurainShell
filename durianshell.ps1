@@ -25,4 +25,29 @@ Home > 1.1 > HTTP > Nikto > R1 / R2 / R3
 
 Proably handle return of menu options here.
 
+Level 1
+Refresh
+Options 
+Directory 
+Load
+Save
+Scan  Nmap 
+
+Tool nmap 
+Back to main
+IP Range
+Scan level 1-4
+Custom ports? 
+--stats-every 10s,
+Scan
+
+Ip
+All
+Multi choice list of ips and open ports 
+
+Proto selsct
+List of open proto 
+
+Tools for <proto>
+
 #>
