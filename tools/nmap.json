@@ -1,1 +1,12 @@
-
+{
+  "name": "NMAP",
+  "protocol": "any",
+  "options": {
+    "sn": {
+      "description": "-sn Ping Scan - disable port scan"
+    },
+    "Pn": {
+      "description": "-Pn Treat all hosts as online -- skip host discovery"
+    }
+  }
+}
