@@ -4,15 +4,84 @@
 # Initialize #
 ##############
 $tools = New-Object psobject
-$import = Get-Content -Raw C:\PS\nmap.json | ConvertFrom-Json
-
+$import = Get-Content -path "C:\PS\nmap.json" -raw | ConvertFrom-Json
 # Import tools, then overlay with user settings
 
 # If the tool is installed, add it to the list
 $tools | Add-Member -Name $import.name -Value $import -MemberType NoteProperty
 
-# Get all tools, might be redundant willb e calculated in the menu later
-$toolList = $tools | Get-Member | ? {$_.membertype -eq "NoteProperty"} | % {$_.name}
+#########################
+# Set up the navigation #
+#########################
+
+$navigation = New-Object psobject
+$navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
+$navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
+$navigation | Add-Member -MemberType NoteProperty -Name param -Value ""
+
+##################
+# Menu v2        #
+##################
+
+Clear-Host
+# Clear the previous choices
+$menuChoices = @{}
+$counter = 1
+
+# Build menu
+
+# Header Bar
+Write-Host "$($navigation.location) > $($navigation.tool) > $($navigation.param)"
+Write-Host "Jobs running: NMAP 1, Hydra 2"
+Write-Host
+Write-Host "Target selected: None"
+
+# if navigation.location -eq tools and .param -eq ""
+# Command Builder
+Write-Host "Command: $($tools.($navigation.tool).command)" -NoNewline #Notice the trailing space
+
+# Iterate through all of the Tool options, echo the enabled ones
+$tools.($navigation.tool).options.PSObject.Properties | Where-Object {
+$_.value.enabled -eq $true } | ForEach-Object {Write-Host -NoNewline " $($_.value.output)"} #Add space before
+
+Write-Host "`n`nWhich do you want to toggle?" 
+Write-Host "`n<enter> Cancel/Back"
+
+# Iterate through each Tool-Option while keeping the order
+$tools.($navigation.tool).options.PSobject.Properties | ForEach-Object {
+
+
+if ($_.value.enabled){$enabled = "X"}
+else {$enabled = " "}
+Write-Host -NoNewline $counter
+if ($_.value.group){
+    Write-Host -NoNewline " ($enabled) "  
+}
+else {
+    Write-Host -NoNewline " [$enabled] "  
+}
+
+Write-Host $_.value.description
+
+# Save list and increment
+$menuChoices | Add-Member -MemberType NoteProperty -Name $counter -Value $_.Name
+$counter++
+
+# Display the extra paramater, if any
+if ($_.value.param.required){
+Write-Host "  Additional info needed"
+}
+}
+# Final space
+Write-Host
+
+# Recieve input
+#$choice = Read-Host -Prompt "Pick a number: "
+
+#$userChoices
+
+#Get-Content -Path C:\PS\nmap.json | ConvertFrom-Json
+
 
 <#
 Lots to do here, I'll start with a light framework that I'll replace
