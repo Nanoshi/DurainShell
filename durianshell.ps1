@@ -10,9 +10,9 @@ $import = Get-Content -path "C:\PS\nmap.json" -raw | ConvertFrom-Json
 # If the tool is installed, add it to the list
 $tools | Add-Member -Name $import.name -Value $import -MemberType NoteProperty
 
-#########################
-# Set up the navigation #
-#########################
+#################################
+# Set up the initial navigation #
+#################################
 
 $navigation = New-Object psobject
 $navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
