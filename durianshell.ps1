@@ -95,14 +95,17 @@ $counter++
 
 # Display the extra paramater, if any
 if ($_.value.param.required){
-Write-Host "  Additional info needed"
+    if($scan.($_.name)){
+        Write-host "      < $($scan.($_.name)) >"}
+    else{
+        Write-Host "      < Mandatory >"}
 }
 }
 # Final space
 Write-Host
 
 # Recieve input
-#$choice = Read-Host -Prompt "Pick a number: "
+$choice = Read-Host -Prompt "Pick a number "
 
 # userChoices
 
