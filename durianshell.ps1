@@ -4,31 +4,27 @@
 # Initialize #
 ##############
 $tools = New-Object psobject
-$import = Get-Content -path "C:\PS\nmap.json" -raw | ConvertFrom-Json
+$import = Get-Content -path "C:\PS\DS\tools\nmap.json" -raw | ConvertFrom-Json
 # Import tools, then overlay with user settings
 
 # If the tool is installed, add it to the list
 $tools | Add-Member -Name $import.name -Value $import -MemberType NoteProperty
 
-#################################
 # Set up the initial navigation #
-#################################
 
 $navigation = New-Object psobject
-$navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
 $navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
-$navigation | Add-Member -MemberType NoteProperty -Name param -Value ""
+$navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
+$navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
 
-##################
-# Menu v2        #
-##################
+###########
+# Menu v2 #
+###########
 
 Clear-Host
 # Clear the previous choices
 $menuChoices = @{}
 $counter = 1
-
-# Build menu
 
 # Header Bar
 Write-Host "$($navigation.location) > $($navigation.tool) > $($navigation.param)"
@@ -36,13 +32,43 @@ Write-Host "Jobs running: NMAP 1, Hydra 2"
 Write-Host
 Write-Host "Target selected: None"
 
-# if navigation.location -eq tools and .param -eq ""
-# Command Builder
-Write-Host "Command: $($tools.($navigation.tool).command)" -NoNewline #Notice the trailing space
+# Menu Logic
 
-# Iterate through all of the Tool options, echo the enabled ones
+#############
+# Tool Menu #
+#############
+
+### Temp setting
+$scan = $null
+
+# Configure $scan
+if ($scan -eq $null){
+$scan = New-Object psobject
+$scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
+
+
+# Iterate through each Tool Option
 $tools.($navigation.tool).options.PSObject.Properties | Where-Object {
-$_.value.enabled -eq $true } | ForEach-Object {Write-Host -NoNewline " $($_.value.output)"} #Add space before
+    $_.value.enabled -eq $true } | ForEach-Object {
+        if ($tools.($navigation.tool).options.($_.name).param){
+            $scan | Add-Member -MemberType NoteProperty -Name "$($_.name)" -Value $tools.NMAP.options.$($_.name).param.defualts[0]
+        }else{
+            $scan | Add-Member -MemberType NoteProperty -Name "$($_.name)" -Value ""
+        } # End If/else
+    } # End For-Each loop 
+} # End if
+
+
+# Command Builder
+Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trailing space
+
+# Replace tool.output.param with scan.param
+$tools.($scan.tool).options.PSObject.Properties | Where-Object {
+    $_.value.enabled -eq $true } | ForEach-Object {
+    Write-Host -NoNewline " $($tools.$($scan.tool).options.p.output.Replace("<param>","$($scan.p)"))" 
+
+} # End For-Each loop 
+
 
 Write-Host "`n`nWhich do you want to toggle?" 
 Write-Host "`n<enter> Cancel/Back"
@@ -69,18 +95,66 @@ $counter++
 
 # Display the extra paramater, if any
 if ($_.value.param.required){
-Write-Host "  Additional info needed"
+    if($scan.($_.name)){
+        Write-host "      < $($scan.($_.name)) >"}
+    else{
+        Write-Host "      < Mandatory >"}
 }
 }
 # Final space
 Write-Host
 
 # Recieve input
-#$choice = Read-Host -Prompt "Pick a number: "
+$choice = Read-Host -Prompt "Pick a number "
 
-#$userChoices
+# userChoices
 
-#Get-Content -Path C:\PS\nmap.json | ConvertFrom-Json
+# Adjust Navigation
+
+# Toggle variables + export settings
+<# new object with properties Test and Foo
+$obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
+
+# remove a property from PSObject.Properties
+$obj.PSObject.Properties.Remove('Foo')
+#>
+# If back/cancel then clear scan variable
+
+#########
+# Notes #
+#########
+
+<#
+#Variables layout
+
+\\config = @{}
+-tools
+history #Per tool
+session #Per Scan Session
+auto #Auto folder
+-navigation
+
+Enter tool menu
+if !scan
+    tool default > scan
+display tool + scan options
+
+
+# Examples
+
+scan.tool=nmap
+scan.pn
+scan.p.param = 80
+
+tools.namp.pn....
+
+session.targets (all)
+session.tools.nmap.... #Same as history
+
+history.nmap[1].p.param #Ref the tools, be careful
+
+
+#>
 
 
 <#
@@ -102,15 +176,6 @@ Job handler. Job ids
 Ssh parser? 
 Scp
 #>
-
-
-# Initialize 
-
-# Import all ps1 functions
-
-# Import all .JSON settings
-
-# Scan for installed tools
 
 # Ask if it's a new scan or a old
 # ask name or auto generated 
