@@ -115,21 +115,23 @@ $tools.($navigation.tool).options.PSobject.Properties | ForEach-Object {
 # Final space
 Write-Host
 
-# Recieve input
-$choice = Read-Host -Prompt "Pick a number "
 
-# userChoices
+# Recieve and validate input
+[string]$choice = $null
+[string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
+
 if ($choice -like ""){
 # Go back 1 menu
     Write-host "Going back"; sleep -Seconds 3; Continue;
 }
 
-#if ($choice -isnot [int]){
- #   Write-host "Please type a number or just press enter to go back"; sleep -Seconds 3; Continue;
-#}
+if ($choice -notmatch '^[0-9]+$'){
+    Write-host "Please type a number"; sleep -Seconds 3; Continue;
+}
 
-if ($choice -lt "1" -and $choice -ge "$counter"){
-    Write-Host "Choose a number in the range above"; sleep -Seconds 3; Continue;
+
+if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
+    Write-Host "Please choose a number in the range above"; sleep -Seconds 3; Continue;
 }
 
 
