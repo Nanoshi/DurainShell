@@ -27,7 +27,7 @@ $navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
 ###########
 
 # Loop forever
-#while (1) {
+while (1) {
 
 Clear-Host
 # Clear the previous choices
@@ -47,7 +47,7 @@ Write-Host "Target selected: None"
 #############
 
 ### Temp setting
-$scan = $null
+#$scan = $null
 
 # Configure $scan from tool if empty
 if ($null -eq $scan){
@@ -73,7 +73,7 @@ Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trai
 # Replace tool.output.param with scan.param
 $tools.($scan.tool).options.PSObject.Properties | Where-Object {
     $scan.($_.name).enabled -eq $true } | ForEach-Object {
-    Write-Host -NoNewline " $($tools.$($scan.tool).options.p.output.Replace("<param>","$($scan.($_.name).param)"))" 
+    Write-Host -NoNewline " $($tools.$($scan.tool).options.($_.name).output.Replace("<param>","$($scan.($_.name).param)"))" 
 
 } # End For-Each loop 
 
@@ -129,25 +129,53 @@ if ($choice -notmatch '^[0-9]+$'){
     Write-host "Please type a number"; sleep -Seconds 3; Continue;
 }
 
-
 if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
     Write-Host "Please choose a number in the range above"; sleep -Seconds 3; Continue;
 }
 
-
-
-# Adjust Navigation
-
-
-#}# End For ever loop, back to the top.
-
 # Toggle variables + export settings
+# Ideas: Filter Navigation first then options ***
+#
+
+# Simple 1d choice
+if ($menuChoices.($choice).count -eq 1){
+    Write-Host "1 Param"
+    # Cut out if EXIT
+    if ($menuChoices.($choice) -match "exit") { break; }
+    
+    # Save options and execute command
+    if ($menuChoices.($choice) -match "run") { break; }
+
+    # Toggle options
+    if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
+        Write-Host "Toggle"
+        $scan.($menuChoices.($choice)).enabled = !($scan.($menuChoices.($choice)).enabled)
+    }
+
+}
+
+# Paramater handling
+if ($menuChoices.($choice).count -eq 2){
+
+}
+
+
+
+
+
+
 <# new object with properties Test and Foo
 $obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
 
 # remove a property from PSObject.Properties
 $obj.PSObject.Properties.Remove('Foo')
 #>
+
+
+# Adjust Navigation
+
+}# End For ever loop, back to the top.
+
 # If back/cancel then clear scan variable
 
 #########
