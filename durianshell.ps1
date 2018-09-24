@@ -131,32 +131,31 @@ Write-Host "r     Run the scan"
 # Final space
 Write-Host
 
-
 # Recieve and validate input
 [string]$choice = $null
 [string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
 
 if ($choice -like ""){
-    Write-host "Going up 1 menu"; sleep -Seconds $sleepTimer; Continue;
+    Write-host "Going up 1 menu"; Start-Sleep -Seconds $sleepTimer; Continue;
 }
 
 if ($choice -match "e"){
-    Write-host "Exiting program"; sleep -Seconds $sleepTimer; break;
+    Write-host "Exiting program"; Start-Sleep -Seconds $sleepTimer; break;
 }
 
 if ($choice -match "d"){
 # Go back 1 menu
     Write-host "Default settings!";
     $scan = $null
-    sleep -Seconds $sleepTimer; Continue;
+    Start-Sleep -Seconds $sleepTimer; Continue;
 }
 
 if ($choice -notmatch '^[0-9]+$'){
-    Write-host "Please type a number"; sleep -Seconds $sleepTimer; Continue;
+    Write-host "Please type a number"; Start-Sleep -Seconds $sleepTimer; Continue;
 }
 
 if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
-    Write-Host "Please choose a number in the range above"; sleep -Seconds $sleepTimer; Continue;
+    Write-Host "Please choose a number in the range above"; Start-Sleep -Seconds $sleepTimer; Continue;
 }
 
 # Toggle variables + export settings
@@ -176,19 +175,21 @@ if ($menuChoices.($choice).count -eq 1){
     if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
         Write-Host "Toggle"
         $scan.($menuChoices.($choice)).enabled = !($scan.($menuChoices.($choice)).enabled)
-    }
-
-}
+        # Tool group
+        $toggleGroup = $tools.($navigation.tool).options.($menuChoices.($choice)).group
+        if ($toggleGroup -notlike "" -and $scan.($menuChoices.($choice)).enabled){
+            $tools.($scan.tool).options.PSObject.Properties | Where-Object {
+            $_.name -notlike $menuChoices.$choice } | ForEach-Object {
+                $scan.($menuChoices.($choice)).enabled = $false
+            } # End Foreach-Ob Group
+        } # End if group
+    } # End toggle if
+} # End Choice 1
 
 # Paramater handling
 if ($menuChoices.($choice).count -eq 2){
 
 }
-
-
-
-
-
 
 <# new object with properties Test and Foo
 $obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
@@ -197,10 +198,9 @@ $obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
 $obj.PSObject.Properties.Remove('Foo')
 #>
 
-
 # Adjust Navigation
 
-}# End For ever loop, back to the top.
+} # End For ever loop, back to the top.
 
 # If back/cancel then clear scan variable
 
