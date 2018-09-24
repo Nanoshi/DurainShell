@@ -4,7 +4,9 @@
 # Initialize #
 ##############
 
-<#
+# Sleep Timer for debugging
+$sleepTimer = 1
+
 # Set PWD to script location
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
 $tools = New-Object psobject
@@ -20,7 +22,7 @@ $navigation = New-Object psobject
 $navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
 $navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
 $navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
-#>
+
 
 ###########
 # Menu v2 #
@@ -35,10 +37,13 @@ $menuChoices = New-Object psobject
 $counter = 1
 
 # Header Bar
-Write-Host "$($navigation.location) > $($navigation.tool) > $($navigation.param)"
+Write-Host
+if ($navigation.location) { Write-Host -NoNewline "$($navigation.location)"}
+if ($navigation.tool) { Write-Host -NoNewline " > $($navigation.tool)"}
+if ($navigation.param) { Write-Host -NoNewline " > $($navigation.param)"}
+Write-Host "`n"
 Write-Host "Jobs running: NMAP 1, Hydra 2"
 Write-Host
-Write-Host "Target selected: None"
 
 # Menu Logic
 
@@ -66,6 +71,8 @@ if ($null -eq $scan){
     } # End For-Each loop 
 } # End if
 
+# Logic about selected targets
+Write-Host "Target selected: None"
 
 # Command Builder
 Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trailing space
@@ -111,7 +118,16 @@ $tools.($navigation.tool).options.PSobject.Properties | ForEach-Object {
     $counter++
 
     }
-}
+} # End of For-Each Option
+
+# Add default settings, scan and exit
+# Catch these outside of the MenuChoice
+Write-host
+Write-Host "d     Restore default settings"
+Write-Host "s     Save current settings"
+Write-Host "e     Exit Program"
+Write-Host "r     Run the scan"
+
 # Final space
 Write-Host
 
@@ -121,16 +137,26 @@ Write-Host
 [string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
 
 if ($choice -like ""){
+    Write-host "Going up 1 menu"; sleep -Seconds $sleepTimer; Continue;
+}
+
+if ($choice -match "e"){
+    Write-host "Exiting program"; sleep -Seconds $sleepTimer; break;
+}
+
+if ($choice -match "d"){
 # Go back 1 menu
-    Write-host "Going back"; sleep -Seconds 3; Continue;
+    Write-host "Default settings!";
+    $scan = $null
+    sleep -Seconds $sleepTimer; Continue;
 }
 
 if ($choice -notmatch '^[0-9]+$'){
-    Write-host "Please type a number"; sleep -Seconds 3; Continue;
+    Write-host "Please type a number"; sleep -Seconds $sleepTimer; Continue;
 }
 
 if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
-    Write-Host "Please choose a number in the range above"; sleep -Seconds 3; Continue;
+    Write-Host "Please choose a number in the range above"; sleep -Seconds $sleepTimer; Continue;
 }
 
 # Toggle variables + export settings
