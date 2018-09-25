@@ -175,12 +175,14 @@ if ($menuChoices.($choice).count -eq 1){
     if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
         Write-Host "Toggle"
         $scan.($menuChoices.($choice)).enabled = !($scan.($menuChoices.($choice)).enabled)
-        # Tool group
+        # If option grouping is not blank
         $toggleGroup = $tools.($navigation.tool).options.($menuChoices.($choice)).group
         if ($toggleGroup -notlike "" -and $scan.($menuChoices.($choice)).enabled){
+            # Loops through tool-options, then turn off others from group
             $tools.($scan.tool).options.PSObject.Properties | Where-Object {
-            $_.name -notlike $menuChoices.$choice } | ForEach-Object {
-                $scan.($menuChoices.($choice)).enabled = $false
+            $tools.($scan.tool).options.($_.name).group -eq $toggleGroup -and
+            $_.name -notlike $menuChoices.$choice} | ForEach-Object {
+                $scan.($_.name).enabled = $false
             } # End Foreach-Ob Group
         } # End if group
     } # End toggle if
