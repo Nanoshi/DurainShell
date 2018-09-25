@@ -17,6 +17,7 @@ $import = Get-Content -path "./tools/nmap.json" -raw | ConvertFrom-Json
 $tools | Add-Member -Name $import.name -Value $import -MemberType NoteProperty
 
 # Set up the initial navigation #
+$scan = $null
 
 $navigation = New-Object psobject
 $navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
@@ -51,90 +52,92 @@ Write-Host
 # Tool Menu #
 #############
 
-### Temp setting
-#$scan = $null
+if ($navigation.location -like "Tools" -and $navigation -notlike "") {
+    # Configure $scan from tool if empty
+    if ($null -eq $scan){
+        $scan = New-Object psobject
+        $scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
+        # Iterate through each Tool Option
+        $tools.($navigation.tool).options.PSObject.Properties | ForEach-Object {
+            $entry = New-Object PSObject
+            $entry |Add-Member -MemberType NoteProperty -Name "enabled" -Value ($_.value.enabled -eq $true)
+            if ($tools.($navigation.tool).options.($_.name).param){
+                $entry | Add-Member -MemberType NoteProperty -Name "param" -Value $tools.($navigation.tool).options.$($_.name).param.defualts[0]
+            }else{
+                $entry | Add-Member -MemberType NoteProperty -Name "param" -Value ""
+            }
+            $scan | Add-Member -MemberType NoteProperty -Name $_.name -Value $entry
+        } # End For-Each loop 
+    } # End if
 
-# Configure $scan from tool if empty
-if ($null -eq $scan){
-    $scan = New-Object psobject
-    $scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
-    # Iterate through each Tool Option
-    $tools.($navigation.tool).options.PSObject.Properties | ForEach-Object {
-        $entry = New-Object PSObject
-        $entry |Add-Member -MemberType NoteProperty -Name "enabled" -Value ($_.value.enabled -eq $true)
-        if ($tools.($navigation.tool).options.($_.name).param){
-            $entry | Add-Member -MemberType NoteProperty -Name "param" -Value $tools.($navigation.tool).options.$($_.name).param.defualts[0]
-        }else{
-            $entry | Add-Member -MemberType NoteProperty -Name "param" -Value ""
-        }
-        $scan | Add-Member -MemberType NoteProperty -Name $_.name -Value $entry
+    # Logic about selected targets
+    Write-Host "Target selected: None"
+
+    # Command Builder
+    Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trailing space
+
+    # Replace tool.output.param with scan.param
+    $tools.($scan.tool).options.PSObject.Properties | Where-Object {
+        $scan.($_.name).enabled -eq $true } | ForEach-Object {
+        Write-Host -NoNewline " $($tools.$($scan.tool).options.($_.name).output.Replace("<param>","$($scan.($_.name).param)"))" 
+
     } # End For-Each loop 
-} # End if
-
-# Logic about selected targets
-Write-Host "Target selected: None"
-
-# Command Builder
-Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trailing space
-
-# Replace tool.output.param with scan.param
-$tools.($scan.tool).options.PSObject.Properties | Where-Object {
-    $scan.($_.name).enabled -eq $true } | ForEach-Object {
-    Write-Host -NoNewline " $($tools.$($scan.tool).options.($_.name).output.Replace("<param>","$($scan.($_.name).param)"))" 
-
-} # End For-Each loop 
 
 
-Write-Host "`n`nWhich do you want to toggle?" 
-Write-Host "`n<enter> Cancel/Back"
+    Write-Host "`n`nWhich do you want to toggle?" 
+    Write-Host "`n<enter> Cancel/Back"
 
-# Iterate through each Tool-Option while keeping the order
-$tools.($navigation.tool).options.PSobject.Properties | ForEach-Object {
+    # Iterate through each Tool-Option while keeping the order
+    $tools.($navigation.tool).options.PSobject.Properties | ForEach-Object {
 
-    if ($scan.($_.name).enabled){$enabled = "X"}
-    else {$enabled = " "}
-    Write-Host -NoNewline $counter
-    if ($_.value.group){
-        Write-Host -NoNewline " ($enabled) "  
-    }
-    else {
-        Write-Host -NoNewline " [$enabled] "  
-    }
+        if ($scan.($_.name).enabled){$enabled = "X"}
+        else {$enabled = " "}
+        Write-Host -NoNewline $counter
+        if ($_.value.group){
+            Write-Host -NoNewline " ($enabled) "  
+        }
+        else {
+            Write-Host -NoNewline " [$enabled] "  
+        }
 
-    Write-Host $_.value.description
+        Write-Host $_.value.description
 
-    # Save list and increment
-    $menuChoices | Add-Member -MemberType NoteProperty -Name $counter -Value $_.Name
-    $counter++
+        # Save list and increment
+        $menuChoices | Add-Member -MemberType NoteProperty -Name $counter -Value $_.Name
+        $counter++
 
-    # Display the extra paramater, if any
-    if ($_.value.param.required){
-        if($scan.($_.name)){
-            Write-host "$counter     < $($scan.($_.name).param) >"}
-        else{
-            Write-Host "$counter     < Mandatory >"}
-    # For param options, saves menu option as an array
-    $menuChoices | Add-Member -MemberType NoteProperty -Name $counter -Value ($_.name,"param")
-    $counter++
+        # Display the extra paramater, if any
+        if ($_.value.param.required){
+            if($scan.($_.name)){
+                Write-host "$counter     < $($scan.($_.name).param) >"}
+            else{
+                Write-Host "$counter     < Mandatory >"}
+        # For param options, saves menu option as an array
+        $menuChoices | Add-Member -MemberType NoteProperty -Name $counter -Value ($_.name,"param")
+        $counter++
 
-    }
-} # End of For-Each Option
+        }
+    } # End of For-Each Option
 
-# Add default settings, scan and exit
-# Catch these outside of the MenuChoice
-Write-host
-Write-Host "d     Restore default settings"
-Write-Host "s     Save current settings"
-Write-Host "e     Exit Program"
-Write-Host "r     Run the scan"
+    # Add default settings, scan and exit
+    # Catch these outside of the MenuChoice
+    Write-host
+    Write-Host "d     Restore default settings"
+    Write-Host "s     Save current settings"
+    Write-Host "e     Exit Program"
+    Write-Host "r     Run the scan"
+    Write-Host
+} # End tool menu
 
-# Final space
-Write-Host
+##################
+# Receive Inputs #
+##################
 
 # Recieve and validate input
 [string]$choice = $null
 [string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
 
+# If back/cancel then clear scan variable
 if ($choice -like ""){
     Write-host "Going up 1 menu"; Start-Sleep -Seconds $sleepTimer; Continue;
 }
@@ -185,45 +188,41 @@ if ($menuChoices.($choice).count -eq 1){
                 $scan.($_.name).enabled = $false
             } # End Foreach-Ob Group
         } # End if group
-    } # End toggle if
+    }  # End toggle if
+    break # Back to the top of the menu
 } # End Choice 1
 
 # Paramater handling
 if ($menuChoices.($choice).count -eq 2){
+    $navigation.option = $menuChoices.($choice)
+    break 
+} # End Param
 
-}
+Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep; 
+} # End For ever loop, back to the top.
 
+#########
+# Notes #
+#########
 <# new object with properties Test and Foo
 $obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
 
 # remove a property from PSObject.Properties
 $obj.PSObject.Properties.Remove('Foo')
-#>
 
-# Adjust Navigation
-
-} # End For ever loop, back to the top.
-
-# If back/cancel then clear scan variable
-
-#########
-# Notes #
-#########
-
-<#
 #Variables layout
 
 \\config = @{}
--tools
++tools
 history #Per tool
-session #Per Scan Session
++session #Per Scan Session
 auto #Auto folder
--navigation
++navigation
 
 Enter tool menu
-if !scan
-    tool default > scan
-display tool + scan options
++if !scan
++    tool default > scan
++display tool + scan options
 
 
 # Examples
@@ -239,11 +238,8 @@ session.tools.nmap.... #Same as history
 
 history.nmap[1].p.param #Ref the tools, be careful
 
+#################
 
-#>
-
-
-<#
 Lots to do here, I'll start with a light framework that I'll replace
 In time. 
 
@@ -261,7 +257,6 @@ Ip select all many one
 Job handler. Job ids
 Ssh parser? 
 Scp
-#>
 
 # Ask if it's a new scan or a old
 # ask name or auto generated 
@@ -270,7 +265,6 @@ Scp
 
 # Navigation loop
 
-<#
 Navigate template (maybe dynamic basec on proto options)
 Home > Hosts > Protocol > Tool > Results
 Home > 1.1 > HTTP > Nikto > R1 / R2 / R3
