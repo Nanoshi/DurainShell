@@ -41,18 +41,20 @@ $counter = 1
 Write-Host
 if ($navigation.location) { Write-Host -NoNewline "$($navigation.location)"}
 if ($navigation.tool) { Write-Host -NoNewline " > $($navigation.tool)"}
-if ($navigation.param) { Write-Host -NoNewline " > $($navigation.param)"}
+if ($navigation.param) { Write-Host -NoNewline " > $($navigation.option)"}
 Write-Host "`n"
 Write-Host "Jobs running: NMAP 1, Hydra 2"
 Write-Host
 
 # Menu Logic
+# Menu displays thing based on $navigation and $scan variables
+# Input section changes variable values and sends back to menu
 
 #############
 # Tool Menu #
 #############
 
-if ($navigation.location -like "Tools" -and $navigation -notlike "") {
+if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
     # Configure $scan from tool if empty
     if ($null -eq $scan){
         $scan = New-Object psobject
@@ -129,6 +131,12 @@ if ($navigation.location -like "Tools" -and $navigation -notlike "") {
     Write-Host
 } # End tool menu
 
+if ($navigation.location -like "Tools" -and $navigation.tool -notlike "" -and $navigation.option -notlike ""){
+    Write-Host "Which paramater would you like to use?`n"
+    Write-Host "Current: $($scan.($navigation.option).param)"
+
+} # End Param choice  
+
 ##################
 # Receive Inputs #
 ##################
@@ -169,10 +177,10 @@ if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
 if ($menuChoices.($choice).count -eq 1){
     Write-Host "1 Param"
     # Cut out if EXIT
-    if ($menuChoices.($choice) -match "exit") { break; }
+    if ($menuChoices.($choice) -match "exit") { Continue; }
     
     # Save options and execute command
-    if ($menuChoices.($choice) -match "run") { break; }
+    if ($menuChoices.($choice) -match "run") { Continue; }
 
     # Toggle options
     if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
@@ -189,13 +197,13 @@ if ($menuChoices.($choice).count -eq 1){
             } # End Foreach-Ob Group
         } # End if group
     }  # End toggle if
-    break # Back to the top of the menu
+    Continue # Back to the top of the menu
 } # End Choice 1
 
 # Paramater handling
 if ($menuChoices.($choice).count -eq 2){
     $navigation.option = $menuChoices.($choice)
-    break 
+    Continue 
 } # End Param
 
 Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep; 
