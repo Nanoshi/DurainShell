@@ -4,6 +4,7 @@
 # Initialize #
 ##############
 
+#region Initialize
 # Sleep Timer for debugging
 $sleepTimer = 1
 
@@ -23,7 +24,7 @@ $navigation = New-Object psobject
 $navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
 $navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
 $navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
-
+#endregion
 
 ###########
 # Menu v2 #
@@ -32,6 +33,7 @@ $navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
 # Loop forever
 while (1) {
 
+#region Menu Header
 Clear-Host
 # Clear the previous choices
 $menuChoices = New-Object psobject
@@ -45,18 +47,26 @@ if ($navigation.param) { Write-Host -NoNewline " > $($navigation.option)"}
 Write-Host "`n"
 Write-Host "Jobs running: NMAP 1, Hydra 2"
 Write-Host
+#endregion
 
-# Menu Logic
-# Menu displays thing based on $navigation and $scan variables
-# Input section changes variable values and sends back to menu
+#region Menu Home
+
+#endregion
 
 #############
 # Tool Menu #
 #############
 
-if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
+#region Menu - Tool
+if ($navigation.location -like "Tools") {
+    # Menu - Tool selection
+    if ($navigation.tool -like ""){
+
+    }
+    # Menu - Tool - Option selection
+    if ($navigation.tool -notlike "") {
     # Configure $scan from tool if empty
-    if ($null -eq $scan){
+        if ($null -eq $scan){
         $scan = New-Object psobject
         $scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
         # Iterate through each Tool Option
@@ -71,7 +81,8 @@ if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
             $scan | Add-Member -MemberType NoteProperty -Name $_.name -Value $entry
         } # End For-Each loop 
     } # End if
-
+    } # End Tool - Option
+} # End tool
     # Logic about selected targets
     Write-Host "Target selected: None"
 
@@ -130,12 +141,15 @@ if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
     Write-Host "r     Run the scan"
     Write-Host
 } # End tool menu
+#endregion
 
+#region Menu - Tool - Option - Param
 if ($navigation.location -like "Tools" -and $navigation.tool -notlike "" -and $navigation.option -notlike ""){
     Write-Host "Which paramater would you like to use?`n"
-    Write-Host "Current: $($scan.($navigation.option).param)"
-
+    Write-Host "Current: $($scan.($navigation.option).param)`n"
+    
 } # End Param choice  
+#endregion
 
 ##################
 # Receive Inputs #
@@ -171,40 +185,43 @@ if ([int]$choice -lt 1 -or [int]$choice -ge $counter){
 
 # Toggle variables + export settings
 # Ideas: Filter Navigation first then options ***
-#
 
-# Simple 1d choice
-if ($menuChoices.($choice).count -eq 1){
-    Write-Host "1 Param"
-    # Cut out if EXIT
-    if ($menuChoices.($choice) -match "exit") { Continue; }
-    
-    # Save options and execute command
-    if ($menuChoices.($choice) -match "run") { Continue; }
+#region Input - Tools - Options
+if ($navigation.location -like "Tools" -and $navigation.tool -notlike "" -and $navigation.option -like ""){
+    # Simple 1d choice
+    if ($menuChoices.($choice).count -eq 1){
+        Write-Host "1 Param"
+        # Cut out if EXIT
+        if ($menuChoices.($choice) -match "exit") { Continue; }
+        
+        # Save options and execute command
+        if ($menuChoices.($choice) -match "run") { Continue; }
 
-    # Toggle options
-    if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
-        Write-Host "Toggle"
-        $scan.($menuChoices.($choice)).enabled = !($scan.($menuChoices.($choice)).enabled)
-        # If option grouping is not blank
-        $toggleGroup = $tools.($navigation.tool).options.($menuChoices.($choice)).group
-        if ($toggleGroup -notlike "" -and $scan.($menuChoices.($choice)).enabled){
-            # Loops through tool-options, then turn off others from group
-            $tools.($scan.tool).options.PSObject.Properties | Where-Object {
-            $tools.($scan.tool).options.($_.name).group -eq $toggleGroup -and
-            $_.name -notlike $menuChoices.$choice} | ForEach-Object {
-                $scan.($_.name).enabled = $false
-            } # End Foreach-Ob Group
-        } # End if group
-    }  # End toggle if
-    Continue # Back to the top of the menu
-} # End Choice 1
+        # Toggle options
+        if ($navigation.location -like "Tools" -and $navigation.tool -notlike "") {
+            Write-Host "Toggle"
+            $scan.($menuChoices.($choice)).enabled = !($scan.($menuChoices.($choice)).enabled)
+            # If option grouping is not blank
+            $toggleGroup = $tools.($navigation.tool).options.($menuChoices.($choice)).group
+            if ($toggleGroup -notlike "" -and $scan.($menuChoices.($choice)).enabled){
+                # Loops through tool-options, then turn off others from group
+                $tools.($scan.tool).options.PSObject.Properties | Where-Object {
+                $tools.($scan.tool).options.($_.name).group -eq $toggleGroup -and
+                $_.name -notlike $menuChoices.$choice} | ForEach-Object {
+                    $scan.($_.name).enabled = $false
+                } # End Foreach-Ob Group
+            } # End if group
+        }  # End toggle if
+        Continue # Back to the top of the menu
+    } # End Choice 1
 
-# Paramater handling
-if ($menuChoices.($choice).count -eq 2){
-    $navigation.option = $menuChoices.($choice)
-    Continue 
-} # End Param
+    # Paramater handling
+    if ($menuChoices.($choice).count -eq 2){
+        $navigation.option = $menuChoices.($choice)
+        Continue 
+    } # End Param
+} # End Input Tool Options
+#endregion
 
 Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep; 
 } # End For ever loop, back to the top.
