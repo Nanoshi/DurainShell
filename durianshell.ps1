@@ -47,6 +47,10 @@ while (1) {
 	Write-Host "`n"
 	Write-Host "Jobs running: NMAP 1, Hydra 2"
 	Write-Host
+
+	# Logic about selected targets
+	Write-Host "Target selected: None"
+
 	#endregion
 
 	#region Menu Home
@@ -59,13 +63,20 @@ while (1) {
 
 	#region Menu - Tool
 	if ($navigation.location -like "Tools") {
-		# Menu - Tool selection
+
+		#region Menu - Tool Main
 		if ($navigation.tool -like "") {
 
 		}
-		# Menu - Tool - Option selection
+        #endregion
+
+		#region Menu - Tool Option selection
 		if ($navigation.tool -notlike "") {
-			# Configure $scan from tool if empty
+
+            #region Menu - Tool Option Main
+            if ($navigation.option -like "") {
+
+                #region Configure scan if blank
 			if ($null -eq $scan) {
 				$scan = New-Object psobject
 				$scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
@@ -81,26 +92,24 @@ while (1) {
 					$scan | Add-Member -MemberType NoteProperty -Name $_.Name -Value $entry
 				} # End For-Each loop 
 			} # End if blank scan
+            #endregion
 
-			# Logic about selected targets
-			Write-Host "Target selected: None"
-
-			# Command Builder
+			    #region Command Builder
 			Write-Host "Command: $($tools.($scan.tool).command)" -NoNewline #Notice the trailing space
 
-			# Replace tool.output.param with scan.param
+			# Display each scan.enabeled tool option with scan.param
 			$tools.($scan.tool).options.PSObject.Properties | Where-Object {
 				$scan.($_.Name).enabled -eq $true } | ForEach-Object {
 				Write-Host -NoNewline " $($tools.$($scan.tool).options.($_.name).output.Replace("<param>","$($scan.($_.name).param)"))"
+			} # End For-Each loop
+            #endregion
 
-			} # End For-Each loop 
+                #region Menu counters and choices
+			    Write-Host "`n`nWhich do you want to toggle?"
+			    Write-Host "`n<enter> Cancel/Back"
 
-
-			Write-Host "`n`nWhich do you want to toggle?"
-			Write-Host "`n<enter> Cancel/Back"
-
-			# Iterate through each Tool-Option while keeping the order
-			$tools.($navigation.tool).options.PSObject.Properties | ForEach-Object {
+			    # Iterate through each Tool-Option while keeping the order
+			    $tools.($navigation.tool).options.PSObject.Properties | ForEach-Object {
 
 				if ($scan.($_.Name).enabled) { $enabled = "X" }
 				else { $enabled = " " }
@@ -131,25 +140,29 @@ while (1) {
 				}
 			} # End of For-Each Option
 
-			# Add default settings, scan and exit
-			# Catch these outside of the MenuChoice
-			Write-Host
+   			Write-Host
 			Write-Host "d     Restore default settings"
 			Write-Host "s     Save current settings"
 			Write-Host "e     Exit Program"
 			Write-Host "r     Run the scan"
 			Write-Host
+            #endregion
+
+            } # End Tool Option Main
+            #endregion Menu Tool Option Main
+
+            #region Menu -Tool - Option - Param
+            if ($navigation.option -notlike ""){
+
+            }
+            #endregion
 
 		} # End Tool - Option
-	} # End tool
-	#endregion
-
-	#region Menu - Tool - Option - Param
-	if ($navigation.location -like "Tools" -and $navigation.tool -notlike "" -and $navigation.option -notlike "") {
-		Write-Host "Which paramater would you like to use?`n"
-		Write-Host "Current: $($scan.($navigation.option).param)`n"
+        #endregion Tool - Option
 
 	} # End Param choice  
+
+   	} # End tool
 	#endregion
 
 	##################
@@ -224,7 +237,7 @@ while (1) {
 	} # End Input Tool Options
 	#endregion
 
-	Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep;
+	Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep $sleepTimer; break;
 } # End For ever loop, back to the top.
 
 #########
