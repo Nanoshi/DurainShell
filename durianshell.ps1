@@ -183,15 +183,8 @@ while (1) {
 	##################
 	# Receive Inputs #
 	##################
-<# Ideas:
-+ Back/Refresh
-+ Tool E D
-+ Menu 1-9
-#>
-
-
-
-	# Recieve and validate input
+    
+    #region Recieve and validate input
 	[string]$choice = $null
 	[string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
 
@@ -225,6 +218,7 @@ while (1) {
 	if ([int]$choice -lt 1 -or [int]$choice -ge $counter) {
 		Write-Host "Please choose a number in the range above"; Start-Sleep -Seconds $sleepTimer; continue;
 	}
+    #endregion
 
 	# Toggle variables + export settings
 	# Ideas: Filter Navigation first then options ***
@@ -262,14 +256,15 @@ while (1) {
 					    } # End Foreach-Ob Group
 				    } # End if group
     			continue # Back to the top of the menu
-			    } # End 1 Param 
-		    } # End Choice 1
+			    } # End 1 Param
+                if ($menuChoices.($choice).count -eq 2) {
+			        $navigation.option = $menuChoices.($choice)
+			           continue
+		        } # End 2 Param  
+		    } # End Option = Blank
+        } # End Tool option
 
 		# Paramater handling
-		if ($menuChoices.($choice).count -eq 2) {
-			$navigation.option = $menuChoices.($choice)
-			continue
-		} # End Param
 	} # End Input Tool Options
 	#endregion
 
