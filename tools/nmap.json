@@ -35,7 +35,7 @@
     },
     "p": {
       "description": "-p <port ranges>: Only scan specified ports",
-      "group": "",
+      "group": "port group",
       "enabled": true,
       "param": {
         "required": true,
@@ -49,6 +49,56 @@
         ]
       },
       "output": "-p <param>"
+    },
+    "F": {
+      "description": "-F Fast scan, small set of ports",
+      "group": "port group",
+      "enabled": false,
+      "output": "-F"
+    },
+    "T4": {
+      "description": "-T4 Faster timing between attempts ",
+      "group": "",
+      "enabled": true,
+      "output": "-T4"
+    },
+    "sV": {
+      "description": "-sV Probe open ports to determine service/version info",
+      "group": "",
+      "enabled": true,
+      "output": "-sV"
+    },
+    "O": {
+      "description": "-O OS Detection",
+      "group": "",
+      "enabled": true,
+      "output": "-O"
+    },
+    "vvvv": {
+      "description": "-vvvv Very Verbose logging",
+      "group": "",
+      "enabled": true,
+      "output": "-vvvv"
+    },
+    "IP": {
+      "description": "IP <Mandatory>",
+      "group": "",
+      "enabled": true,
+      "param": {
+        "required": true,
+        "defualts": [
+          "192.168.1.101",
+          "192.168.0.0/24",
+          "192.168.1.1-254"
+        ]
+      },
+      "output": "<param>"
+    },
+    "oA": {
+      "description": "-oA Save output <mandatory>",
+      "group": "",
+      "enabled": true,
+      "output": "-oA nmap"
     }
   }
 }
