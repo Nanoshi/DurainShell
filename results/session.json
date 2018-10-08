@@ -1,0 +1,36 @@
+﻿[
+  {
+    "ip": "192.168.1.1",
+    "OS": "Windows 10",
+    "nmap": [
+      {
+        "command": "xxxx",
+        "date": "now",
+        "http": {
+          "80": {
+            "details": "apache",
+            "login": "john:doe",
+            "user": "anon"
+          }
+        },
+        "data": "dump"
+      },
+      ""
+    ],
+    "nikto": [
+      {
+        "command": "xxxx",
+        "date": "now",
+        "http": {
+          "80": {
+            "details": "apache",
+            "login": "john:doe",
+            "user": "anon"
+          }
+        },
+        "data": "dump"
+      },
+      ""
+    ]
+  }
+]
