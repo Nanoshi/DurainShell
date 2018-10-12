@@ -10,20 +10,24 @@ $sleepTimer = 1
 
 # Set PWD to script location
 Set-Location (Split-Path $script:MyInvocation.MyCommand.Path)
-$tools = New-Object psobject
-$import = Get-Content -Path "./tools/nmap.json" -Raw | ConvertFrom-Json
+
 # Import tools, then overlay with user settings
+$import = Get-Content -Path "./tools/nmap.json" -Raw | ConvertFrom-Json
 
-# If the tool is installed, add it to the list
-$tools | Add-Member -Name $import.Name -Value $import -MemberType NoteProperty
+# If the tool is installed, add it to the list, add some validation later
+$tools = [PSCustomObject]@{
+    $import.name = $import
+}
 
-# Set up the initial navigation #
+# Set up the initial navigation
 $scan = $null
 
-$navigation = New-Object psobject
-$navigation | Add-Member -MemberType NoteProperty -Name location -Value "Tools"
-$navigation | Add-Member -MemberType NoteProperty -Name tool -Value "NMAP"
-$navigation | Add-Member -MemberType NoteProperty -Name option -Value ""
+# Set up Navi
+$navigation = [PSCustomObject]@{
+    location = "Tools"
+    tool = "NMAP"
+    option = ""
+}
 #endregion
 
 ###########
@@ -36,7 +40,7 @@ while (1) {
 	#region Menu Header
 	Clear-Host
 	# Clear the previous choices
-	$menuChoices = New-Object psobject
+	$menuChoices = New-Object PSCustomObject
 	$counter = 1
 
 	# Header Bar
@@ -53,6 +57,9 @@ while (1) {
 	#endregion
 
 	#region Menu Home
+    # List exiting directories
+    Get-ChildItem -Directory .\results 
+
 	if ($navigation.location -notlike "Tools"){
 		Write-Host "`nWhich folder would you like to save it in?"
 		# List Existing Scans
@@ -87,11 +94,12 @@ while (1) {
 
 			#region Configure scan if blank
 			if ($null -eq $scan) {
-				$scan = New-Object psobject
-				$scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
+                # Can't splat here because of the logic
+				$scan = New-Object PSCustomObject
+                $scan | Add-Member -MemberType NoteProperty -Name "tool" -Value $navigation.tool
 				# Iterate through each Tool Option
 				$tools.($navigation.tool).options.PSObject.Properties | ForEach-Object {
-					$entry = New-Object PSObject
+					$entry = New-Object PSCustomObject
 					$entry | Add-Member -MemberType NoteProperty -Name "enabled" -Value ($_.value.enabled -eq $true)
 					if ($tools.($navigation.tool).options.($_.Name).param) {
 						$entry | Add-Member -MemberType NoteProperty -Name "param" -Value $tools.($navigation.tool).options.$($_.Name).param.defualts[0]
@@ -198,20 +206,33 @@ while (1) {
 	[string]$choice = $null
 	[string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
 
+<#
+    if ($navigation.location -like "Home"){
+        if ($choice -like ""){
+            $reportDir = $autoName
+        }
+	    if ($choice -like "e") {
+		    Write-Host "Exiting program"; Start-Sleep -Seconds $sleepTimer; break;
+    	}
+        else {
+            $reportDir = $choice
+        }
+        if (-not (Test-Path "./results/$(choice)")){
+            New-Item -ItemType Directory -Path "./results/$($choice)"
+        }
+        Set-Location -Path "./results/$($choice)"
+    }
+    #>
+
 	# If back/cancel then clear scan variable
 	if ($choice -like "") {
 		Write-Host "Going up 1 menu"; Start-Sleep -Seconds $sleepTimer; 
         if ($navigation.option){ $navigation.option = ""; continue;}
         if ($navigation.tool){ $navigation.tool = ""; continue;}
-		#$navigation.location = "Home"; continue;
+		$navigation.location = "Home"; continue;
 		continue
 	}
 
-    if ($navigation.location -like "Home"){
-	    if ($choice -like "e") {
-		    Write-Host "Exiting program"; Start-Sleep -Seconds $sleepTimer; break;
-    	}
-    }
 
     if ($navigation.location -like "Tools"){
 	    if ($choice -like "d") {
