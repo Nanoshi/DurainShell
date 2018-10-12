@@ -6,7 +6,7 @@ Not functional just yet but I plan to use the functionality an robustness of pow
 Tools can use the outputs of other tools.  
 
 ## NMAP Parser example
-Imports nmap.xml and converts it to an array of objects. More tool output will be added to the $targets variable as you do more scans.
+Imports nmap.xml and converts it to an array of objects. More tool output will be added to the $targets variable as more scans are conducted.
 ```
 $targets
 
