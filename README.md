@@ -1,7 +1,5 @@
 # DurianShell
-Command line parameter generater
-And
-Automated vulnerability scanner
+Command line parameter generater and automated vulnerability tester. It's fully modular with the ability to add any tool that you choose.
 
 Not functional just yet but I plan to use the functionality an robustness of powershell to automate my Nmap scans and do future scans based on the results. 
 
