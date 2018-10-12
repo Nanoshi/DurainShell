@@ -3,6 +3,8 @@ Command line parameter generater and automated vulnerability tester. It's fully 
 
 Not functional just yet but I plan to use the functionality an robustness of powershell to automate my Nmap scans and do future scans based on the results. 
 
+Tools can use the outputs of other tools.  
+
 ## NMAP Parser example
 Imports nmap.xml and converts it to an array of objects. More tool output will be added to the $targets variable as you do more scans.
 ```
