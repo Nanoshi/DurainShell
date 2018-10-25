@@ -21,11 +21,12 @@ $tools = [PSCustomObject]@{
 
 # Set up the initial navigation
 $scan = $null
+$reportFolder = $null
 
 # Set up Navi
 $navigation = [PSCustomObject]@{
-    location = "Tools"
-    tool = "NMAP"
+    location = "Start" #Tools
+    tool = "" #NMAP
     option = ""
 }
 #endregion
@@ -48,25 +49,57 @@ while (1) {
 	if ($navigation.location) { Write-Host -NoNewline "$($navigation.location)" }
 	if ($navigation.tool) { Write-Host -NoNewline " > $($navigation.tool)" }
 	if ($navigation.option) { Write-Host -NoNewline " > $($navigation.option[0])" }
-	Write-Host "`n"
-	Write-Host "Jobs running: NMAP 1, Hydra 2"
-	Write-Host
+    Write-Host
 
-	# Logic about selected targets
-	Write-Host "Target selected: None"
-	#endregion
-
+    # Start Menu
 	#region Menu Home
-    # List exiting directories
-    Get-ChildItem -Directory .\results 
+    # List existing directories
 
-	if ($navigation.location -notlike "Tools"){
-		Write-Host "`nWhich folder would you like to save it in?"
+	if ($navigation.location -like "Start"){
+        Write-Host "
+d8888b. db    db d8888b. d888888b  .d8b.  d8b   db  
+88  '8D 88    88 88  '8D   '88'   d8' '8b 888o  88  
+88   88 88    88 88oobY'    88    88ooo88 88V8o 88  
+88   88 88    88 88'8b      88    88~~~88 88 V8o88  
+88  .8D 88b  d88 88 '88.   .88.   88   88 88  V888  
+Y8888D' ~Y8888P' 88   YD Y888888P YP   YP VP   V8P  
+                                                                           
+     .d8888. db   db d88888b db      db      
+     88'  YP 88   88 88'     88      88      
+     '8bo.   88ooo88 88ooooo 88      88      
+       'Y8b. 88~~~88 88~~~~~ 88      88      
+     db   8D 88   88 88.     88booo. 88booo. 
+     '8888Y' YP   YP Y88888P Y88888P Y88888P"
+     
+		Write-Host "`nWhich folder do you want to work from?`n"
+
 		# List Existing Scans
-		$autoName = "$(Get-Date -Format yyyymmdd-HH)"
-		Write-Host "<enter> For auto-generated $autoName"
+        $(Get-ChildItem -Directory .\results).name
+		Write-Host "`n<enter> none, no saved settings`n"
 	}
 	#endregion
+
+    # Top status bar
+    if ($navigation.location -notlike "Start"){
+	    Write-Host "Jobs running: NMAP 1, Hydra 2"
+	    Write-Host
+
+	    # Logic about selected targets
+        Write-Host "Working Folder: $reportFolder"
+	    Write-Host "Target selected: None`n"
+	    #endregion
+    }
+
+    if ($navigation.location -like "Home"){
+        Write-Host "<enter> - Refresh status"
+        Write-Host "t - Tools section"
+        Write-Host "l - Loot"
+        Write-Host "j - Job details"
+        Write-Host "s - Set active targets"
+        Write-Host "g - Global settings"
+        Write-Host "c - Change working directory"
+        Write-Host "e - Exit"
+    }
 
 	#############
 	# Tool Menu #
@@ -162,8 +195,6 @@ while (1) {
 
 				Write-Host
 				Write-Host "d `tRestore default settings"
-				#Write-Host "s `tSave current settings"
-				#Write-Host "e `tExit Program"
 				Write-Host "r `tRun the scan"
 				Write-Host
 				#endregion
@@ -204,55 +235,62 @@ while (1) {
     
     #region Recieve and validate input
 	[string]$choice = $null
-	[string]$choice = Read-Host -Prompt "Pick a number " -ErrorAction SilentlyContinue
+	[string]$choice = Read-Host -Prompt "Make your selection " -ErrorAction SilentlyContinue
 
-<#
-    if ($navigation.location -like "Home"){
-        if ($choice -like ""){
-            $reportDir = $autoName
+    # Start Menu Catch
+    if ($navigation.location -like "Start"){
+        if ($choice -like "")
+        { $navigation.location = "Home"; $reportFolder = ""; continue;}
+        # Validate folder name
+        if ($choice -notmatch '^[a-zA-Z0-9-_]+$')
+        { Write-Host "`nPlease use only a-z, A-Z, 0-9, -, and _ (no spaces)"; sleep -Seconds 3; Continue;}
+        
+        # Make dir and set report variable
+        if (-not (Test-Path "$PWD\results\$choice")){
+            New-Item -Path "$PWD\results\" -Name $choice -ItemType Directory | Out-Null
         }
-	    if ($choice -like "e") {
-		    Write-Host "Exiting program"; Start-Sleep -Seconds $sleepTimer; break;
-    	}
-        else {
-            $reportDir = $choice
-        }
-        if (-not (Test-Path "./results/$(choice)")){
-            New-Item -ItemType Directory -Path "./results/$($choice)"
-        }
-        Set-Location -Path "./results/$($choice)"
+        $reportFolder = "$PWD\results\$choice"
+        $navigation.location = "Home"
+        Continue
     }
-    #>
 
-	# If back/cancel then clear scan variable
+    # Home Menu Catch
+    if ($navigation.location -like "Home"){
+        Switch($choice){
+            "" {continue} # Refresh
+            "t" {$navigation.location = "Tools"; continue}
+            "l" {$navigation.location = "Loot"; continue}
+            "j" {$navigation.location = "Jobs"; continue}
+            "s" {$navigation.location = "Targets"; continue}
+            "g" {$navigation.location = "Global"; continue}
+            "c" {$navigation.location = "Start"; continue}
+            default{Write-Host "Choose one of the above options"; sleep -Seconds 2}
+        }
+        if ($choice -like "e") { break }
+        continue
+    }
+
+	# If <blank/enter> adjust the navigation back 1 step
 	if ($choice -like "") {
-		Write-Host "Going up 1 menu"; Start-Sleep -Seconds $sleepTimer; 
         if ($navigation.option){ $navigation.option = ""; continue;}
         if ($navigation.tool){ $navigation.tool = ""; continue;}
 		$navigation.location = "Home"; continue;
 		continue
 	}
 
-
-    if ($navigation.location -like "Tools"){
-	    if ($choice -like "d") {
-		    Write-Host "Default settings!";
-		    $scan = $null
-		    Start-Sleep -Seconds $sleepTimer; continue;
-    	}
-    }
-
-	if ($choice -notmatch '^[0-9]+$') {
+    # Validate for non-numbers
+	if ($choice -notmatch '^[0-9dDrR]+$') {
 		Write-Host "Please type a number"; Start-Sleep -Seconds $sleepTimer; continue;
 	}
-
+        
+    # Check if it's in the choice range
 	if ([int]$choice -lt 1 -or [int]$choice -ge $counter) {
 		Write-Host "Please choose a number in the range above"; Start-Sleep -Seconds $sleepTimer; continue;
 	}
     #endregion
 
 	#region Input - Tools - Options
-	if ($navigation.location -like "Tools") {
+	if ($navigation.location -like "Tools"){
 
         # Choose a tool
         if ($navigation.tool -like ""){
@@ -263,6 +301,13 @@ while (1) {
         # Choose tool option
         if ($navigation.tool -notlike "") {
             if ($navigation.option -like "") {
+
+                # Reset defaults
+	            if ($choice -like "d") {
+		            Write-Host "Default settings!"; $scan = $null;
+		            Start-Sleep -Seconds $sleepTimer; continue;
+    	        }
+
 		        # Simple 1d choice
 		        if ($menuChoices.($choice).count -eq 1) {
 			        Write-Host "1 Param"
@@ -285,11 +330,14 @@ while (1) {
 				    } # End if group
     			continue # Back to the top of the menu
 			    } # End 1 Param
+
+                # 2d choice
                 if ($menuChoices.($choice).count -eq 2) {
 			        $navigation.option = $menuChoices.($choice)
 			           continue
 		        } # End 2 Param  
 			} # End Option = Blank
+
             # Assign param to scan option
 			if ($navigation.option -notlike "") {
                 if ($choice -like 1) {
@@ -308,108 +356,4 @@ while (1) {
 	Write-Host "Input didn't match with anything, something went wrong..."; Start-Sleep $sleepTimer; break;
 } # End For ever loop, back to the top.
 
-#########
-# Notes #
-#########
-<# new object with properties Test and Foo
-$obj = New-Object -TypeName PSObject -Property @{ Test = 1; Foo = 2 }
-
-# remove a property from PSObject.Properties
-$obj.PSObject.Properties.Remove('Foo')
-
-#Variables layout
-
-\\config = @{}
-+tools
-history #Per tool
-+session #Per Scan Session
-auto #Auto folder
-+navigation
-
-Enter tool menu
-+if !scan
-+    tool default > scan
-+display tool + scan options
-
-
-# Examples
-
-scan.tool=nmap
-scan.pn
-scan.p.param = 80
-
-tools.namp.pn....
-
-session.targets (all)
-session.tools.nmap.... #Same as history
-
-history.nmap[1].p.param #Ref the tools, be careful
-
-#################
-
-Lots to do here, I'll start with a light framework that I'll replace
-In time. 
-
-To do list:
-Auto scan menu based on results
-Logging per ip
-Tool default and history layout 
-Tool json layout
-Parsers
-Object nesting defaults > history > ip
-Master log
-Output clixml 
-Toggle menu
-Ip select all many one
-Job handler. Job ids
-Ssh parser? 
-Scp
-
-# Ask if it's a new scan or a old
-# ask name or auto generated 
-
-# Import old scan settings
-
-# Navigation loop
-
-Navigate template (maybe dynamic basec on proto options)
-Home > Hosts > Protocol > Tool > Results
-Home > 1.1 > HTTP > Nikto > R1 / R2 / R3
-
-Proably handle return of menu options here.
-
-Level 1
-Refresh
-Tools
-  Based on target protocols
-  Http <1 target>
-  Scanners always visible 
-  Show all <manually select>
-Choose targets <currently>
-  List of live, multi select
-Global Options
-  Auto sub menu 
-    Enable disable features
-  Localip
-  Directory of reports
-  Logging level
-Change to different save
-Exit 
-
-Tool options header 
-# Location
-# ip selected
-# current command
-## current option? 
-
-Auto options
-Nmap progressive123
-  If live system
-
-Jobs running 
-# running / # queued name
-1/3 nmap 2 nikto 4 dirb
-
-Manage jobs 
-  Cancel job
-#>
+# Done! 
